@@ -11,30 +11,30 @@ function Calendar({ selectedDate, setSelectedDate }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = () => {
-      try {
-        const userId = firebase.auth.currentUser.uid;
-        const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+  const fetchData = () => {
+    try {
+      const userId = firebase.auth.currentUser.uid;
+      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
 
-        // Mendengarkan perubahan data secara real-time
-        const unsubscribe = onSnapshot(transactionsRef, (snapshot) => {
-          const transactionsData = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data()
-          }));
+      // Mendengarkan perubahan data secara real-time
+      const unsubscribe = onSnapshot(transactionsRef, (snapshot) => {
+        const transactionsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-          console.log("Data transaksi untuk kalender:", transactionsData); // Debugging
-          setTransactions(transactionsData);
-        });
+        console.log("Data transaksi untuk kalender:", transactionsData); // Debugging
+        setTransactions(transactionsData);
+      });
 
-        return () => unsubscribe(); // Membersihkan listener saat komponen unmount
-      } catch (error) {
-        console.error("Gagal mengambil data untuk kalender:", error);
-      }
-    };
+      return () => unsubscribe(); // Membersihkan listener saat komponen unmount
+    } catch (error) {
+      console.error("Gagal mengambil data untuk kalender:", error);
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+}, []);
 
   const handleDateClick = async (info) => {
     const selected = info.dateStr; // Format YYYY-MM-DD
