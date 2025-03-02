@@ -262,6 +262,7 @@ function Dashboard() {
       {selectedDate && (
         <div style={{ marginTop: "20px" }}>
           <h3>Transaksi pada {selectedDate}</h3>
+          <p>Mohon muat ulang/refresh halaman setiap Anda menginput transaksi. </p>
           {transactions.length > 0 ? (
             <>
               <ul>
