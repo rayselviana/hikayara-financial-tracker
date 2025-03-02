@@ -1,10 +1,14 @@
 // src/components/Calendar.jsx
-import React, { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import firebase from "../firebase";
 
 function Calendar({ selectedDate, setSelectedDate }) {
   const [transactions, setTransactions] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = () => {
@@ -32,79 +36,48 @@ function Calendar({ selectedDate, setSelectedDate }) {
     fetchData();
   }, []);
 
-  // Fungsi untuk mendapatkan total pengeluaran pada tanggal tertentu
-  const getTotalExpenseForDate = (date) => {
-    const expenses = transactions
-      .filter((transaction) => transaction.date === date && transaction.type === "expense")
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+  const handleDateClick = async (info) => {
+    const selected = info.dateStr; // Format YYYY-MM-DD
+    setSelectedDate(selected); // Kirim tanggal terpilih ke Dashboard
 
-    return expenses;
-  };
+    try {
+      const userId = firebase.auth.currentUser.uid;
+      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
 
-  // Fungsi untuk menentukan warna berdasarkan logika sugesti
-  const getDateColor = (date) => {
-    const totalExpense = getTotalExpenseForDate(date);
-    if (totalExpense > 500000) {
-      return "#dc3545"; // Merah (pengeluaran tinggi)
-    } else if (totalExpense > 0) {
-      return "#28a745"; // Hijau (pengeluaran OK)
-    } else {
-      return "#333333"; // Abu-abu (tidak ada transaksi)
+      const q = query(transactionsRef, where("date", "==", selected));
+      const snapshot = await getDocs(q);
+
+      const transactionsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log("Transaksi untuk tanggal:", selected, transactionsData); // Debugging
+      setTransactions(transactionsData);
+    } catch (error) {
+      console.error("Gagal mengambil data untuk tanggal:", error);
     }
   };
 
-  // Render Kalender
-  const renderCalendar = () => {
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const startDay = firstDayOfMonth.getDay();
-    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "5px" }}>
-        {/* Header Hari */}
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div key={day} style={{ color: "#ffffff", textAlign: "center", fontWeight: "bold" }}>
-            {day}
-          </div>
-        ))}
-
-        {/* Isi Kalender */}
-        {Array.from({ length: 35 }, (_, index) => {
-          const currentDate = new Date(today.getFullYear(), today.getMonth(), index + 1 - startDay);
-          const isCurrentMonth = currentDate.getMonth() === today.getMonth();
-          const isToday = currentDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-          const formattedDate = currentDate.toISOString().slice(0, 10); // Format YYYY-MM-DD
-          const dateColor = getDateColor(formattedDate);
-
-          return (
-            <div
-              key={index}
-              onClick={() => setSelectedDate(formattedDate)} // Pastikan tanggal yang diklik sesuai
-              style={{
-                padding: "10px",
-                backgroundColor: isToday ? "#007bff" : dateColor,
-                color: isToday || dateColor !== "#333333" ? "#ffffff" : "#cccccc",
-                textAlign: "center",
-                cursor: "pointer",
-                borderRadius: "5px",
-                opacity: isCurrentMonth ? 1 : 0.5
-              }}
-            >
-              {currentDate.getDate()}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
-    <div style={{ padding: "20px", backgroundColor: "#121212", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)" }}>
-      <h2 style={{ color: "#ffffff", marginBottom: "10px" }}>Kalender Transaksi</h2>
+    <div>
+      {/* Judul Kalender */}
+      <h2>Kalender Transaksi</h2>
 
       {/* Kalender */}
-      {renderCalendar()}
+      <FullCalendar
+        plugins={[dayGridPlugin]}
+        initialView="dayGridMonth"
+        dateClick={handleDateClick} // Pastikan ini ada
+        events={transactions
+          .slice(0, 3) // Batasi hanya 3 transaksi pertama
+          .map((t) => ({
+            title: `${t.type === "income" ? "+ Rp" : "- Rp"}${t.amount}`,
+            date: t.date,
+            backgroundColor: t.date === selectedDate ? "#FFD700" : "#378006" // Highlight kuning untuk tanggal terpilih
+          }))}
+        initialDate={selectedDate || undefined} // Lompat ke tanggal yang dipilih
+      />
     </div>
   );
 }
