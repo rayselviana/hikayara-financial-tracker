@@ -31,16 +31,42 @@ function Suggestions() {
           const averageExpense = totalExpense / (expenses.length || 1);
           const averageIncome = totalIncome / (incomes.length || 1);
 
-          // Rule-based prediction for savings and investments
-          const savingsGoal = (totalIncome - totalExpense) * 0.2; // Save 20% of net income
-          const investmentAmount = (totalIncome - totalExpense) * 0.1; // Invest 10% of net income
+          // Analisis habit pengguna berdasarkan rasio pendapatan dan pengeluaran
+          const netIncome = totalIncome - totalExpense;
+          const expenseRatio = totalExpense / (totalIncome || 1); // Rasio pengeluaran terhadap pendapatan
 
+          // Rule-based prediction for savings and investments
+          const savingsGoal = netIncome > 0 ? netIncome * 0.2 : 0; // Save 20% of net income if positive
+          const investmentAmount = netIncome > 0 ? netIncome * 0.1 : 0; // Invest 10% of net income if positive
+
+          // Rekomendasi berdasarkan habit pengguna
+          let habitAnalysis = "";
+          if (expenseRatio > 0.7) {
+            habitAnalysis = `
+              Anda memiliki kebiasaan pengeluaran yang tinggi. Cobalah untuk mengurangi pengeluaran non-esensial.
+              Contoh: Kurangi belanja hiburan atau makan di luar.
+            `;
+          } else if (expenseRatio > 0.5) {
+            habitAnalysis = `
+              Pengeluaran Anda cukup stabil, tetapi masih ada ruang untuk penghematan.
+              Contoh: Evaluasi langganan bulanan yang tidak digunakan.
+            `;
+          } else {
+            habitAnalysis = `
+              Anda memiliki kebiasaan pengeluaran yang baik. Terus pertahankan!
+            `;
+          }
+
+          // Saran keuangan modern
           const suggestion = `
-            Berdasarkan pengeluaran dan pendapatan Anda:
+            Berdasarkan analisis transaksi Anda:
             - Total Pendapatan Bulanan: Rp${totalIncome.toFixed(2)}
             - Total Pengeluaran Bulanan: Rp${totalExpense.toFixed(2)}
             - Rata-rata Pengeluaran Harian: Rp${averageExpense.toFixed(2)}
             - Rata-rata Pendapatan Harian: Rp${averageIncome.toFixed(2)}
+
+            Analisis Kebiasaan:
+            ${habitAnalysis}
 
             Saran Keuangan:
             - Tabungan bulanan yang direkomendasikan: Rp${savingsGoal.toFixed(2)} (20% dari pendapatan bersih)
