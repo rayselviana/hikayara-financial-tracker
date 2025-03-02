@@ -95,14 +95,19 @@ function Dashboard() {
   }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const userId = firebase.auth.currentUser.uid;
-        const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+  const fetchTransactions = () => {
+    try {
+      const userId = firebase.auth.currentUser.uid;
+      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
 
-        const q = query(transactionsRef, where("date", "==", selectedDate));
-        const snapshot = await getDocs(q);
+      const q = query(
+        transactionsRef,
+        where("date", "==", selectedDate),
+        orderBy("timestamp", "desc") // Urutkan berdasarkan timestamp (terbaru ke terlama)
+      );
 
+      // Mendengarkan perubahan data secara real-time
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         const transactionsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
@@ -110,10 +115,16 @@ function Dashboard() {
 
         console.log("Transaksi untuk tanggal:", selectedDate, transactionsData); // Debugging
         setTransactions(transactionsData);
-      } catch (error) {
-        console.error("Gagal mengambil data transaksi:", error);
-      }
-    };
+      });
+
+      return () => unsubscribe(); // Membersihkan listener saat komponen unmount
+    } catch (error) {
+      console.error("Gagal mengambil data transaksi:", error);
+    }
+  };
+
+  fetchTransactions();
+}, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
 
     fetchTransactions();
   }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
