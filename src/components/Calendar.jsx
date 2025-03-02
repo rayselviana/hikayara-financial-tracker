@@ -5,8 +5,6 @@ import firebase from "../firebase";
 
 function Calendar({ selectedDate, setSelectedDate }) {
   const [transactions, setTransactions] = useState([]);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     const fetchData = () => {
@@ -55,40 +53,12 @@ function Calendar({ selectedDate, setSelectedDate }) {
     }
   };
 
-  // Fungsi untuk mengubah bulan
-  const changeMonth = (direction) => {
-    if (direction === "prev") {
-      if (currentMonth === 0) {
-        setCurrentMonth(11);
-        setCurrentYear(currentYear - 1);
-      } else {
-        setCurrentMonth(currentMonth - 1);
-      }
-    } else if (direction === "next") {
-      if (currentMonth === 11) {
-        setCurrentMonth(0);
-        setCurrentYear(currentYear + 1);
-      } else {
-        setCurrentMonth(currentMonth + 1);
-      }
-    }
-  };
-
-  // Fungsi untuk mengubah tahun
-  const changeYear = (direction) => {
-    if (direction === "prev") {
-      setCurrentYear(currentYear - 1);
-    } else if (direction === "next") {
-      setCurrentYear(currentYear + 1);
-    }
-  };
-
   // Render Kalender
   const renderCalendar = () => {
     const today = new Date();
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const startDay = firstDayOfMonth.getDay();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
 
     return (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "5px" }}>
@@ -101,8 +71,8 @@ function Calendar({ selectedDate, setSelectedDate }) {
 
         {/* Isi Kalender */}
         {Array.from({ length: 35 }, (_, index) => {
-          const currentDate = new Date(currentYear, currentMonth, index + 1 - startDay);
-          const isCurrentMonth = currentDate.getMonth() === currentMonth;
+          const currentDate = new Date(today.getFullYear(), today.getMonth(), index + 1 - startDay);
+          const isCurrentMonth = currentDate.getMonth() === today.getMonth();
           const isToday = currentDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
           const formattedDate = currentDate.toISOString().slice(0, 10); // Format YYYY-MM-DD
           const dateColor = getDateColor(formattedDate);
@@ -132,65 +102,6 @@ function Calendar({ selectedDate, setSelectedDate }) {
   return (
     <div style={{ padding: "20px", backgroundColor: "#121212", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.3)" }}>
       <h2 style={{ color: "#ffffff", marginBottom: "10px" }}>Kalender Transaksi</h2>
-
-      {/* Live Indikator Bulan dan Tahun */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-        <button
-          onClick={() => changeYear("prev")}
-          style={{
-            backgroundColor: "#333333",
-            color: "#ffffff",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {"<<"}
-        </button>
-        <button
-          onClick={() => changeMonth("prev")}
-          style={{
-            backgroundColor: "#333333",
-            color: "#ffffff",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {"<"}
-        </button>
-        <span style={{ color: "#ffffff", fontSize: "16px", fontWeight: "bold" }}>
-          {new Date(currentYear, currentMonth).toLocaleString("default", { month: "long" })} {currentYear}
-        </span>
-        <button
-          onClick={() => changeMonth("next")}
-          style={{
-            backgroundColor: "#333333",
-            color: "#ffffff",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {">"}
-        </button>
-        <button
-          onClick={() => changeYear("next")}
-          style={{
-            backgroundColor: "#333333",
-            color: "#ffffff",
-            border: "none",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          {">>"}
-        </button>
-      </div>
 
       {/* Kalender */}
       {renderCalendar()}
