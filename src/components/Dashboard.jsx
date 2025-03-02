@@ -22,77 +22,79 @@ function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10)); // Default hari ini
   const [transactions, setTransactions] = useState([]); // Transaksi pada tanggal terpilih
 
-  useEffect(() => {
-    const fetchData = () => {
-      try {
-        const userId = firebase.auth.currentUser.uid;
-        const transactionsRef = collection(firebase.db, users/${userId}/transactions);
+useEffect(() => {
+  const fetchData = () => {
+    try {
+      const userId = firebase.auth.currentUser.uid;
 
-        // Filter data berdasarkan tanggal terpilih (harian)
-        const dailyQueryIncome = query(
-          transactionsRef,
-          where("type", "==", "income"),
-          where("date", "==", selectedDate)
-        );
-        const dailyQueryExpense = query(
-          transactionsRef,
-          where("type", "==", "expense"),
-          where("date", "==", selectedDate)
-        );
+      // Perbaiki baris ini
+      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
 
-        // Filter data berdasarkan bulan terpilih (bulanan)
-        const currentMonth = selectedDate.slice(0, 7); // YYYY-MM
-        const monthlyQueryIncome = query(
-          transactionsRef,
-          where("type", "==", "income"),
-          where("date", ">=", ${currentMonth}-01),
-          where("date", "<=", ${currentMonth}-31)
-        );
-        const monthlyQueryExpense = query(
-          transactionsRef,
-          where("type", "==", "expense"),
-          where("date", ">=", ${currentMonth}-01),
-          where("date", "<=", ${currentMonth}-31)
-        );
+      // Filter data berdasarkan tanggal terpilih (harian)
+      const dailyQueryIncome = query(
+        transactionsRef,
+        where("type", "==", "income"),
+        where("date", "==", selectedDate)
+      );
+      const dailyQueryExpense = query(
+        transactionsRef,
+        where("type", "==", "expense"),
+        where("date", "==", selectedDate)
+      );
 
-        // Mendengarkan perubahan data secara real-time
-        const unsubscribeDailyIncome = onSnapshot(dailyQueryIncome, (snapshot) => {
-          let totalIncome = 0;
-          snapshot.forEach((doc) => (totalIncome += doc.data().amount));
-          setIncomeDaily(totalIncome);
-        });
+      // Filter data berdasarkan bulan terpilih (bulanan)
+      const currentMonth = selectedDate.slice(0, 7); // YYYY-MM
+      const monthlyQueryIncome = query(
+        transactionsRef,
+        where("type", "==", "income"),
+        where("date", ">=", `${currentMonth}-01`),
+        where("date", "<=", `${currentMonth}-31`)
+      );
+      const monthlyQueryExpense = query(
+        transactionsRef,
+        where("type", "==", "expense"),
+        where("date", ">=", `${currentMonth}-01`),
+        where("date", "<=", `${currentMonth}-31`)
+      );
 
-        const unsubscribeDailyExpense = onSnapshot(dailyQueryExpense, (snapshot) => {
-          let totalExpense = 0;
-          snapshot.forEach((doc) => (totalExpense += doc.data().amount));
-          setExpenseDaily(totalExpense);
-        });
+      // Mendengarkan perubahan data secara real-time
+      const unsubscribeDailyIncome = onSnapshot(dailyQueryIncome, (snapshot) => {
+        let totalIncome = 0;
+        snapshot.forEach((doc) => (totalIncome += doc.data().amount));
+        setIncomeDaily(totalIncome);
+      });
 
-        const unsubscribeMonthlyIncome = onSnapshot(monthlyQueryIncome, (snapshot) => {
-          let totalIncome = 0;
-          snapshot.forEach((doc) => (totalIncome += doc.data().amount));
-          setIncomeMonthly(totalIncome);
-        });
+      const unsubscribeDailyExpense = onSnapshot(dailyQueryExpense, (snapshot) => {
+        let totalExpense = 0;
+        snapshot.forEach((doc) => (totalExpense += doc.data().amount));
+        setExpenseDaily(totalExpense);
+      });
 
-        const unsubscribeMonthlyExpense = onSnapshot(monthlyQueryExpense, (snapshot) => {
-          let totalExpense = 0;
-          snapshot.forEach((doc) => (totalExpense += doc.data().amount));
-          setExpenseMonthly(totalExpense);
-        });
+      const unsubscribeMonthlyIncome = onSnapshot(monthlyQueryIncome, (snapshot) => {
+        let totalIncome = 0;
+        snapshot.forEach((doc) => (totalIncome += doc.data().amount));
+        setIncomeMonthly(totalIncome);
+      });
 
-        return () => {
-          unsubscribeDailyIncome();
-          unsubscribeDailyExpense();
-          unsubscribeMonthlyIncome();
-          unsubscribeMonthlyExpense();
-        };
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
-      }
-    };
+      const unsubscribeMonthlyExpense = onSnapshot(monthlyQueryExpense, (snapshot) => {
+        let totalExpense = 0;
+        snapshot.forEach((doc) => (totalExpense += doc.data().amount));
+        setExpenseMonthly(totalExpense);
+      });
 
-    fetchData();
-  }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
+      return () => {
+        unsubscribeDailyIncome();
+        unsubscribeDailyExpense();
+        unsubscribeMonthlyIncome();
+        unsubscribeMonthlyExpense();
+      };
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
+  };
+
+  fetchData();
+}, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah // Jalankan ulang saat tanggal terpilih berubah
 
   useEffect(() => {
     const fetchTransactions = async () => {
