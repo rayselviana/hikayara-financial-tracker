@@ -104,12 +104,13 @@ function Calendar({ selectedDate, setSelectedDate }) {
           const currentDate = new Date(currentYear, currentMonth, index + 1 - startDay);
           const isCurrentMonth = currentDate.getMonth() === currentMonth;
           const isToday = currentDate.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-          const dateColor = getDateColor(currentDate.toISOString().slice(0, 10));
+          const formattedDate = currentDate.toISOString().slice(0, 10); // Format YYYY-MM-DD
+          const dateColor = getDateColor(formattedDate);
 
           return (
             <div
               key={index}
-              onClick={() => setSelectedDate(currentDate.toISOString().slice(0, 10))}
+              onClick={() => setSelectedDate(formattedDate)} // Pastikan tanggal yang diklik sesuai
               style={{
                 padding: "10px",
                 backgroundColor: isToday ? "#007bff" : dateColor,
