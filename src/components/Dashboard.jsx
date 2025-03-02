@@ -26,7 +26,7 @@ function Dashboard() {
     const fetchData = () => {
       try {
         const userId = firebase.auth.currentUser.uid;
-        const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+        const transactionsRef = collection(firebase.db, users/${userId}/transactions);
 
         // Filter data berdasarkan tanggal terpilih (harian)
         const dailyQueryIncome = query(
@@ -45,14 +45,14 @@ function Dashboard() {
         const monthlyQueryIncome = query(
           transactionsRef,
           where("type", "==", "income"),
-          where("date", ">=", `${currentMonth}-01`),
-          where("date", "<=", `${currentMonth}-31`)
+          where("date", ">=", ${currentMonth}-01),
+          where("date", "<=", ${currentMonth}-31)
         );
         const monthlyQueryExpense = query(
           transactionsRef,
           where("type", "==", "expense"),
-          where("date", ">=", `${currentMonth}-01`),
-          where("date", "<=", `${currentMonth}-31`)
+          where("date", ">=", ${currentMonth}-01),
+          where("date", "<=", ${currentMonth}-31)
         );
 
         // Mendengarkan perubahan data secara real-time
@@ -95,19 +95,13 @@ function Dashboard() {
   }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
 
   useEffect(() => {
-  const fetchTransactions = () => {
-    try {
-      const userId = firebase.auth.currentUser.uid;
-      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+    const fetchTransactions = async () => {
+      try {
+        const userId = firebase.auth.currentUser.uid;
+        const transactionsRef = collection(firebase.db, users/${userId}/transactions);
+        const q = query(transactionsRef, where("date", "==", selectedDate));
+        const snapshot = await getDocs(q);
 
-      const q = query(
-        transactionsRef,
-        where("date", "==", selectedDate),
-        orderBy("timestamp", "desc") // Urutkan berdasarkan timestamp (terbaru ke terlama)
-      );
-
-      // Mendengarkan perubahan data secara real-time
-      const unsubscribe = onSnapshot(q, (snapshot) => {
         const transactionsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data()
@@ -115,16 +109,13 @@ function Dashboard() {
 
         console.log("Transaksi untuk tanggal:", selectedDate, transactionsData); // Debugging
         setTransactions(transactionsData);
-      });
+      } catch (error) {
+        console.error("Gagal mengambil data transaksi:", error);
+      }
+    };
 
-      return () => unsubscribe(); // Membersihkan listener saat komponen unmount
-    } catch (error) {
-      console.error("Gagal mengambil data transaksi:", error);
-    }
-  };
-
-  fetchTransactions();
-}, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
+    fetchTransactions();
+  }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -135,7 +126,7 @@ function Dashboard() {
     e.preventDefault();
     try {
       const userId = firebase.auth.currentUser.uid;
-      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+      const transactionsRef = collection(firebase.db, users/${userId}/transactions);
 
       await addDoc(transactionsRef, {
         type: formData.type,
@@ -154,7 +145,7 @@ function Dashboard() {
   const handleDeleteTransaction = async (id) => {
     try {
       const userId = firebase.auth.currentUser.uid;
-      const transactionRef = doc(firebase.db, `users/${userId}/transactions`, id);
+      const transactionRef = doc(firebase.db, users/${userId}/transactions, id);
       await deleteDoc(transactionRef);
 
       alert("Transaksi berhasil dihapus!");
@@ -167,7 +158,7 @@ function Dashboard() {
   const handleDeleteAllTransactions = async () => {
     try {
       const userId = firebase.auth.currentUser.uid;
-      const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
+      const transactionsRef = collection(firebase.db, users/${userId}/transactions);
       const q = query(transactionsRef, where("date", "==", selectedDate));
       const snapshot = await getDocs(q);
 
@@ -230,8 +221,7 @@ function Dashboard() {
           />
         </label>
       </div>
-
-      {/* Statistik Keuangan Harian */}
+     {/* Statistik Keuangan Harian */}
       <div style={{ marginTop: "20px" }}>
         <h3>Data Harian ({selectedDate})</h3>
         <p>Total Pendapatan: Rp{incomeDaily}</p>
@@ -259,7 +249,7 @@ function Dashboard() {
       {selectedDate && (
         <div style={{ marginTop: "20px" }}>
           <h3>Transaksi pada {selectedDate}</h3>
-          <p>Mohon muat ulang/refresh halaman setiap Anda menginput transaksi. </p>
+          <p>Mohon muat ulang/refresh halaman setiap Anda menginput transaksi.</p>
           {transactions.length > 0 ? (
             <>
               <ul>
@@ -272,7 +262,7 @@ function Dashboard() {
                 ))}
               </ul>
               {transactions.length > 3 && (
-                <button onClick={() => navigate(`/transactions/${selectedDate}`)}>
+                <button onClick={() => navigate(/transactions/${selectedDate})}>
                   Lihat lebih banyak...
                 </button>
               )}
