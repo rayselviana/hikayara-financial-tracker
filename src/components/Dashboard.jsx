@@ -126,9 +126,6 @@ function Dashboard() {
   fetchTransactions();
 }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
 
-    fetchTransactions();
-  }, [selectedDate]); // Jalankan ulang saat tanggal terpilih berubah
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
