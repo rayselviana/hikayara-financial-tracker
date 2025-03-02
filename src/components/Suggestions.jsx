@@ -13,10 +13,18 @@ function Suggestions() {
         const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
         const transactionsRef = collection(firebase.db, `users/${userId}/transactions`);
 
-        const q = query(transactionsRef, where("date", ">=", `${currentMonth}-01`), where("date", "<=", `${currentMonth}-31`));
+        // Query untuk mendapatkan transaksi bulan ini
+        const q = query(
+          transactionsRef,
+          where("date", ">=", `${currentMonth}-01`),
+          where("date", "<=", `${currentMonth}-31`)
+        );
 
         // Mendengarkan perubahan data secara real-time
         const unsubscribe = onSnapshot(q, (snapshot) => {
+          console.log("Snapshot dokumen:", snapshot.docs); // Debugging
+
+          // Filter transaksi berdasarkan tipe (income atau expense)
           const expenses = snapshot.docs
             .filter((doc) => doc.data().type === "expense")
             .map((doc) => doc.data().amount);
@@ -25,13 +33,17 @@ function Suggestions() {
             .filter((doc) => doc.data().type === "income")
             .map((doc) => doc.data().amount);
 
+          console.log("Pengeluaran:", expenses); // Debugging
+          console.log("Pendapatan:", incomes); // Debugging
+
+          // Hitung total pengeluaran dan pendapatan
           const totalExpense = expenses.reduce((sum, amount) => sum + amount, 0);
           const totalIncome = incomes.reduce((sum, amount) => sum + amount, 0);
 
-          const averageExpense = totalExpense / (expenses.length || 1);
-          const averageIncome = totalIncome / (incomes.length || 1);
+          console.log("Total Pengeluaran:", totalExpense); // Debugging
+          console.log("Total Pendapatan:", totalIncome); // Debugging
 
-          // Analisis habit pengguna berdasarkan rasio pendapatan dan pengeluaran
+          // Analisis habit pengguna berdasarkan rasio pengeluaran terhadap pendapatan
           const netIncome = totalIncome - totalExpense;
           const expenseRatio = totalExpense / (totalIncome || 1); // Rasio pengeluaran terhadap pendapatan
 
@@ -62,8 +74,6 @@ function Suggestions() {
             Berdasarkan analisis transaksi Anda:
             - Total Pendapatan Bulanan: Rp${totalIncome.toFixed(2)}
             - Total Pengeluaran Bulanan: Rp${totalExpense.toFixed(2)}
-            - Rata-rata Pengeluaran Harian: Rp${averageExpense.toFixed(2)}
-            - Rata-rata Pendapatan Harian: Rp${averageIncome.toFixed(2)}
 
             Analisis Kebiasaan:
             ${habitAnalysis}
